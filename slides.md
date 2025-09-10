@@ -22,28 +22,30 @@ Técnica de diseño de algoritmos para explorar soluciones mediante búsqueda si
 
 # ¿Qué es Backtracking?
 
-Backtracking es una técnica que explora todas las posibles soluciones de un problema, retrocediendo (backtrack) cuando una opción no lleva a una solución válida.
+**Backtracking** es una técnica que explora todas las posibles soluciones de un problema, retrocediendo (_backtrack_) cuando una opción no lleva a una solución válida.
 
-Se utiliza para problemas donde se busca:
+## Se utiliza para problemas donde se busca:
 
-- Encontrar una solución (de decisión)
-- Encontrar todas las soluciones (enumeración)
-- Encontrar la mejor solución (de optimización)
-- Encontrar las mejores (enumeración + optimización)
+- **Encontrar una solución** (de decisión)
+- **Encontrar todas las soluciones** (enumeración)  
+- **Encontrar la mejor solución** (de optimización)
+- **Encontrar las mejores** (enumeración + optimización)
 
 ---
 
 # Etapas del Backtracking
 
-1. **Elección**: Seleccionar una opción/movimiento posible.
+## Proceso sistemático en 5 pasos:
 
-2. **Validación**: Verificar si la opción es válida.
+1. **Elección**: Seleccionar una opción/movimiento posible
 
-3. **Acción**: Realizar la acción.
+2. **Validación**: Verificar si la opción es válida
 
-4. **Recursión**: Llamar recursivamente para explorar el siguiente paso.
+3. **Acción**: Realizar la acción
 
-5. **Deshacer**: Volver atrás (backtrack) para probar otras opciones.
+4. **Recursión**: Llamar recursivamente para explorar el siguiente paso
+
+5. **Deshacer**: Volver atrás (_backtrack_) para probar otras opciones
 
 ---
 
@@ -81,25 +83,25 @@ void backtracking(Estado& estado) {
 
 # Explicación del template
 
-- **hayQuePodar**: Evita explorar ramas que no pueden llevar a una solución válida. No todos los problemas permiten poda.
+- **hayQuePodar**: Evita explorar ramas que no pueden llevar a una solución válida. No todos los problemas permiten poda
 
-- **esSolucion**: Verifica si el estado actual es una solución.
+- **esSolucion**: Verifica si el estado actual es una solución
 
-- **posiblesMovimientos**: Genera las opciones a explorar.
+- **posiblesMovimientos**: Genera las opciones a explorar
 
-- **movimientoValido**: Verifica si un movimiento específico es válido.
+- **movimientoValido**: Verifica si un movimiento específico es válido
 
-- **hacerMovimiento**: Modifica el estado para aplicar el movimiento elegido.
+- **hacerMovimiento**: Modifica el estado para aplicar el movimiento elegido
 
-- **backtracking**: Llamada recursiva para explorar el siguiente nivel del árbol de búsqueda.
+- **backtracking**: Llamada recursiva para explorar el siguiente nivel del árbol de búsqueda
 
-- **deshacerMovimiento**: Revierte el estado al punto anterior (retroceso).
+- **deshacerMovimiento**: Revierte el estado al punto anterior (retroceso)
 
 ---
 
 # ¿Dónde se usa Backtracking?
 
-**Problemas típicos donde es útil:**
+## Problemas típicos donde es útil:
 
 - 🏰 **N-Reinas** - Colocación sin conflictos
 - 🐴 **Caballo** - Caminos óptimos en tablero
@@ -111,10 +113,10 @@ void backtracking(Estado& estado) {
 
 # Ejemplo: N-Reinas
 
-**Objetivo**: Colocar N reinas en un tablero de NxN sin que se ataquen entre sí.
+## Objetivo: 
+Colocar N reinas en un tablero de NxN sin que se ataquen entre sí.
 
-**Estrategia**:
-
+## Estrategia:
 - Colocar una reina por columna
 - Verificar que no haya conflictos con reinas anteriores
 - Backtrack si no se puede colocar en ninguna fila
@@ -254,10 +256,10 @@ void n_reinas_una(int n) {
 
 # Ejemplo: Caballo
 
-**Objetivo**: Encontrar el camino más corto para que un caballo de ajedrez llegue de una casilla inicial a una destino.
+## Objetivo: 
+Encontrar el camino más corto para que un caballo de ajedrez llegue de una casilla inicial a una destino.
 
-**Estrategia**:
-
+## Estrategia:
 - Explorar los 8 movimientos posibles del caballo
 - Usar poda para evitar caminos más largos que el mejor encontrado
 - No repetir casillas visitadas
@@ -397,10 +399,10 @@ void caballo(int fAc, int cAc, int fDe, int cDe) {
 
 # Ejemplo: Problema de la Mochila
 
-**Objetivo**: Buscar el máximo valor posible sin exceder la capacidad.
+## Objetivo: 
+Buscar el máximo valor posible sin exceder la capacidad.
 
-**Estrategia**:
-
+## Estrategia:
 - Para cada objeto: decidir si incluirlo o no
 - Explorar ambas opciones recursivamente
 - Mantener el mejor valor encontrado
@@ -505,26 +507,28 @@ void mochila_01(int capacidad) {
 
 La **poda** es fundamental para mejorar la eficiencia:
 
-- Evita explorar ramas que no pueden llevar a una solución válida.
+- Evita explorar ramas que no pueden llevar a una solución válida
 
-- **Diferencia clave**:
+## Diferencia clave:
 
-  - **Validación de movimiento**: Verifica si una acción es permitida por las reglas.
-  - **Poda real**: Descarta ramas que no pueden mejorar la solución actual.
+- **Validación de movimiento**: Verifica si una acción es permitida por las reglas
+- **Poda real**: Descarta ramas que no pueden mejorar la solución actual
 
-- **Ejemplo laberinto**: Si queremos llegar de A a B en máximo N movimientos, podamos cuando los movimientos restantes sean menores que la distancia mínima entre la posición actual y B.
+## Ejemplo práctico:
+En un laberinto, si queremos llegar de A a B en máximo N movimientos, podamos cuando los movimientos restantes sean menores que la distancia mínima entre la posición actual y B.
 
 ---
 
 # Eficiencia y Complejidad en Backtracking
 
-**Complejidad típica**: Los problemas resueltos con backtracking suelen tener complejidad factorial o exponencial.
+## Complejidad típica: 
+Los problemas resueltos con backtracking suelen tener complejidad factorial o exponencial.
 
-**Factores que afectan el rendimiento**:
+## Factores que afectan el rendimiento:
 
-- 📏 Tamaño del espacio de búsqueda
-- ✂️ Calidad de las podas implementadas
-- 🔄 Orden en que se prueban las opciones
+- **Tamaño del espacio de búsqueda**
+- **Calidad de las podas implementadas**
+- **Orden en que se prueban las opciones**
 
 > **Clave**: Backtracking no "vence" la complejidad exponencial, pero permite resolver problemas de tamaño moderado de forma práctica.
 
@@ -532,27 +536,25 @@ La **poda** es fundamental para mejorar la eficiencia:
 
 # Poda Avanzada y Heurísticas
 
-- **Estrategias clásicas de poda:**
+## Estrategias clásicas de poda:
+- Verificar restricciones antes de avanzar
+- Abortar ramas que no pueden mejorar la solución
 
-  - Verificar restricciones antes de avanzar
-  - Abortar ramas que no pueden mejorar la solución
-
-- **Heurísticas comunes:**
-  - Sudoku → elegir primero la celda con menos opciones posibles
-  - Caballo → priorizar movimientos que lleven a casillas con menos salidas
+## Heurísticas comunes:
+- **Sudoku**: elegir primero la celda con menos opciones posibles
+- **Caballo**: priorizar movimientos que lleven a casillas con menos salidas
 
 ---
 
 # Cuándo NO usar Backtracking
 
-- **Cuando existe una solución más eficiente**:
+## Cuando existe una solución más eficiente:
+- **Programación dinámica** (si hay subestructura óptima)
+- **Algoritmos greedy / DAC**
+- **Algoritmos específicos del dominio**
 
-  - Programación dinámica (si hay subestructura óptima)
-  - Algoritmos greedy (si la propiedad greedy se cumple)
-  - Algoritmos específicos del dominio
-
-- **Para problemas con espacios de búsqueda muy grandes** sin buenas podas
-
+## En otros casos:
+- **Espacios de búsqueda muy grandes** sin buenas podas
 - **Cuando solo se necesita una aproximación** (no la solución exacta)
 
 ---
@@ -562,21 +564,18 @@ La **poda** es fundamental para mejorar la eficiencia:
 **Backtracking** es una técnica algorítmica sistemática para:
 
 - **Explorar** todos los caminos posibles en un espacio de búsqueda
-
 - **Descartar** ramas que no llevan a soluciones (poda)
-
 - **Retroceder** cuando no se puede continuar en un camino
 
-**Características clave:**
-
+## Características clave:
 - La poda es fundamental para la eficiencia
-
 - Se usa para encontrar una, todas, o la mejor solución
 
 ---
 
 # Preguntas y discusión
 
+## Para reflexionar:
 - ¿Qué problemas de la materia se pueden resolver con backtracking?
 - ¿Cómo identificar oportunidades de poda?
 - ¿Cuándo conviene usar backtracking vs. otras técnicas?
