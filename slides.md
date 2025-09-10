@@ -49,24 +49,34 @@ Se utiliza para problemas donde se busca:
 
 # Template General de Backtracking
 
+<div class="overflow-y-auto max-h-96">
+
 ```cpp
-void backtracking(Estado estado) {
-    // La poda es opcional, solo si el problema lo permite
-    if (hayQuePodar(estado)) { return };
-    
-    if (esSolucion(estado)) { procesarSolucion(estado)};
-    
-    else {
-        for (Movimiento mov : posiblesMovimientos(estado)) {
-            if (movimientoValido(estado, mov)) {
-                hacerMovimiento(estado, mov);
-                backtracking(estado);
-                deshacerMovimiento(estado, mov);
-            }
+void backtracking(Estado& estado) {
+    // Poda opcional: evita explorar ramas inútiles
+    if (hayQuePodar(estado)) {
+        return;
+    }
+
+    // Caso base: verificar si encontramos una solución
+    if (esSolucion(estado)) {
+        procesarSolucion(estado);
+        return;
+    }
+
+    // Caso recursivo: explorar todas las posibilidades
+    for (Movimiento mov : posiblesMovimientos(estado)) {
+        if (movimientoValido(estado, mov)) {
+            hacerMovimiento(estado, mov);      // Avanzar
+            backtracking(estado);              // Recursión
+            deshacerMovimiento(estado, mov);   // Retroceder
         }
     }
 }
 ```
+
+</div>
+
 ---
 
 # Explicación del template
@@ -89,158 +99,405 @@ void backtracking(Estado estado) {
 
 # ¿Dónde se usa Backtracking?
 
-Problemas típicos:
+**Problemas típicos donde es útil:**
 
-- N-Reinas
-- Sudoku  
-- Generación de subconjuntos/permutaciones
-- Laberintos y caminos
+- 🏰 **N-Reinas** - Colocación sin conflictos
+- 🐴 **Caballo** - Caminos óptimos en tablero
+- 🧩 **Sudoku** - Completar con restricciones
+- 📝 **Subconjuntos/Permutaciones** - Generación sistemática
+- 🧭 **Laberintos** - Encontrar salidas y caminos
 
 ---
 
 # Ejemplo: N-Reinas
 
-Colocar N reinas en un tablero de NxN sin que se ataquen entre sí.
+**Objetivo**: Colocar N reinas en un tablero de NxN sin que se ataquen entre sí.
+
+**Estrategia**:
+
+- Colocar una reina por columna
+- Verificar que no haya conflictos con reinas anteriores
+- Backtrack si no se puede colocar en ninguna fila
+
+--- 
+
+# Código de N-Reinas
+
+<div class="overflow-y-auto max-h-80 text-xs">
 
 ```cpp
-bool esSolucion(int fila, int N) {
-    return fila == N;
-}
+#include "ListAdy.cpp"
+#include <cassert>
+#include <iostream>
+#include <limits>
+#include <string>
+using namespace std;
 
-bool movimientoValido(int fila, int col, Tablero& t) {
-    return puedoColocar(fila, col, t);
-}
-
-void hacerMovimiento(int fila, int col, Tablero& t) {
-    colocarReina(fila, col, t);
-}
-
-void deshacerMovimiento(int fila, int col, Tablero& t) {
-    quitarReina(fila, col, t);
-}
-
-void nReinasBT(int fila, int N, Tablero& t) {
-    if (esSolucion(fila, N)) {
-        imprimirTablero(t);
-        return;
+bool esSolucion(int c, int n) { return c == n; }
+void imprimirSolucion(int n, bool **reinas) {
+  for (int f = 0; f < n; f++) {
+    for (int c = 0; c < n; c++) {
+      cout << "[";
+      if (reinas[f][c]) {
+        cout << "R";
+      } else {
+        cout << " ";
+      }
+      cout << "] ";
     }
-    for (int col = 0; col < N; col++) {
-        if (movimientoValido(fila, col, t)) {
-            hacerMovimiento(fila, col, t);
-            nReinasBT(fila + 1, N, t);
-            deshacerMovimiento(fila, col, t);
+    cout << endl;
+  }
+  cout << endl << endl;
+}
+
+bool esCoordenadaValida(int f, int c, int n) {
+  return f >= 0 && c >= 0 && f < n && c < n;
+}
+
+bool puedoAplicarMovimiento(int filaCand, int colCand, int n,
+                            bool **candidata) {
+  // chequeo la horizontal
+  int f = filaCand;
+  int c = colCand;
+  while (esCoordenadaValida(f, c, n)) {
+    if (candidata[f][c]) {
+      return false;
+    }
+    c--;
+  }
+  // chequea arriba - izquierda
+  f = filaCand;
+  c = colCand;
+  while (esCoordenadaValida(f, c, n)) {
+    if (candidata[f][c]) {
+      return false;
+    }
+    c--;
+    f--;
+  }
+  // chequea abajo - izquierda
+  f = filaCand;
+  c = colCand;
+  while (esCoordenadaValida(f, c, n)) {
+    if (candidata[f][c]) {
+      return false;
+    }
+    c--;
+    f++;
+  }
+  return true;
+}
+
+void aplicarMovimiento(int f, int c, bool **candidata) {
+  candidata[f][c] = true;
+
+}
+void deshacerMovimiento(int f, int c, bool **candidata) {
+  candidata[f][c] = false;
+}
+
+void n_reinas_bt(int colAc, int n, bool **candidata, int &cantSoluciones) {
+  if (esSolucion(colAc, n)) {
+    cantSoluciones++;
+    // imprimirSolucion(n, candidata);
+  } else {
+    for (int filaAc = 0; filaAc < n; filaAc++) {
+      if (puedoAplicarMovimiento(filaAc, colAc, n, candidata)) {
+        aplicarMovimiento(filaAc, colAc, candidata);
+        n_reinas_bt(colAc + 1, n, candidata, cantSoluciones);
+        deshacerMovimiento(filaAc, colAc, candidata);
+      }
+    }
+  }
+}
+
+void n_reinas_una_bt(int colAc, int n, bool **candidata, bool &exito) {
+  if (!exito) {
+    if (esSolucion(colAc, n)) {
+      exito = true;
+      imprimirSolucion(n, candidata);
+    } else {
+      for (int filaAc = 0; filaAc < n; filaAc++) {
+        if (puedoAplicarMovimiento(filaAc, colAc, n, candidata)) {
+          aplicarMovimiento(filaAc, colAc, candidata);
+          n_reinas_una_bt(colAc + 1, n, candidata, exito);
+          deshacerMovimiento(filaAc, colAc, candidata);
         }
+      }
     }
+  }
+}
+
+int n_reinas(int n) {
+  bool **candidata = new bool *[n]();
+  int cantSol = 0;
+  for (int i = 0; i < n; i++) {
+    candidata[i] = new bool[n]();
+  }
+  n_reinas_bt(0, n, candidata, cantSol);
+  return cantSol;
+}
+
+void n_reinas_una(int n) {
+  bool **candidata = new bool *[n]();
+  for (int i = 0; i < n; i++) {
+    candidata[i] = new bool[n]();
+  }
+  bool exito = false;
+  n_reinas_una_bt(0, n, candidata, exito);
 }
 ```
 
+</div>
+
 ---
 
-# Ejemplo: Sudoku
+# Ejemplo: Caballo
 
-Resolver un tablero de Sudoku llenando los espacios vacíos.
+**Objetivo**: Encontrar el camino más corto para que un caballo de ajedrez llegue de una casilla inicial a una destino.
+
+**Estrategia**:
+
+- Explorar los 8 movimientos posibles del caballo
+- Usar poda para evitar caminos más largos que el mejor encontrado
+- No repetir casillas visitadas
+
+--- 
+
+# Código de Caballo
+
+<div class="overflow-y-auto max-h-80 text-xs">
 
 ```cpp
-bool esSolucion(Tablero& t) {
-    return tableroCompleto(t);
+#include "ListImp.cpp"
+#include <cassert>
+#include <iostream>
+#include <limits>
+#include <string>
+using namespace std;
+
+#define N 8
+
+bool esSolucion(int fAc, int cAc, int fDe, int cDes) {
+  return fAc == fDe && cAc == cDes;
 }
 
-bool movimientoValido(int fila, int col, int num, Tablero& t) {
-    return puedoColocar(fila, col, num, t);
-}
-
-void hacerMovimiento(int fila, int col, int num, Tablero& t) {
-    t[fila][col] = num;
-}
-
-void deshacerMovimiento(int fila, int col, Tablero& t) {
-    t[fila][col] = 0;
-}
-
-void sudokuBT(Tablero& t) {
-    if (esSolucion(t)) {
-        imprimirTablero(t);
-        return;
+void imprimirSolucion(int **camino) {
+  for (int f = 0; f < N; f++) {
+    for (int c = 0; c < N; c++) {
+      cout << "[";
+      if (camino[f][c] == -1) {
+        cout << "  ";
+      } else if (camino[f][c] < 10) {
+        cout << " " << camino[f][c];
+      } else {
+        cout << camino[f][c];
+      }
+      cout << "] ";
     }
-    for (int fila = 0; fila < 9; fila++) {
-        for (int col = 0; col < 9; col++) {
-            if (t[fila][col] == 0) {
-                for (int num = 1; num <= 9; num++) {
-                    if (movimientoValido(fila, col, num, t)) {
-                        hacerMovimiento(fila, col, num, t);
-                        sudokuBT(t);
-                        deshacerMovimiento(fila, col, t);
-                    }
-                }
-                return;
-            }
+    cout << endl;
+  }
+}
+
+bool esCoordenadaValida(int f, int c) {
+  return f < N && c < N && f >= 0 && c >= 0;
+}
+
+bool puedoAplicarMovimiento(int f, int c, int **candidata) {
+  return esCoordenadaValida(f, c) &&
+         candidata[f][c] == -1; // si es una cordenada valida y no pase
+}
+
+void aplicarMovimiento(int fCand, int cCand, int pasoActual,
+                       int **caminoCandidato) {
+  caminoCandidato[fCand][cCand] = pasoActual;
+}
+
+void deshacerMovimiento(int fCand, int cCand, int **caminoCandidato) {
+  caminoCandidato[fCand][cCand] = -1;
+}
+
+bool esMejorSolucion(int pasosActual, int mejoresPasos) {
+  return pasosActual < mejoresPasos;
+}
+
+bool esMejorOIgualSolucion(int pasosActual, int mejoresPasos) {
+  return pasosActual <= mejoresPasos;
+}
+
+bool puedoPodar(int actual, int mejor) { return actual > mejor; }
+
+int **clonarSolucion(int **origen) {
+  int **duplicado = new int *[N]();
+  for (int f = 0; f < N; f++) {
+    duplicado[f] = new int[N]();
+    for (int c = 0; c < N; c++) {
+      duplicado[f][c] = origen[f][c];
+    }
+  }
+  return duplicado;
+}
+
+void caballo_bt(int fAc, int cAc, int fDe, int cDe, int **caminoCandidato,
+                int &mejorPasos, ListImp<int **> *&mejoresCaminos) {
+  if (!puedoPodar(caminoCandidato[fAc][cAc], mejorPasos)) {
+    if (esSolucion(fAc, cAc, fDe, cDe) &&
+        esMejorOIgualSolucion(caminoCandidato[fAc][cAc], mejorPasos)) {
+      if (esMejorSolucion(caminoCandidato[fAc][cAc], mejorPasos)) {
+        mejoresCaminos->clear();
+      }
+      mejoresCaminos->insert(clonarSolucion(caminoCandidato));
+      mejorPasos = caminoCandidato[fAc][cAc];
+    } else {
+      int dFila[8] = {2, 1, -1, -2, -2, -1, 2, 1};
+      int dCol[8] = {1, 2, -2, -1, 1, 2, -1, -2};
+      int pasoActual = caminoCandidato[fAc][cAc];
+      for (int mov = 0; mov < 8; mov++) {
+        int fCand = fAc + dFila[mov];
+        int cCand = cAc + dCol[mov];
+
+        if (puedoAplicarMovimiento(fCand, cCand, caminoCandidato)) {
+          aplicarMovimiento(fCand, cCand, pasoActual + 1, caminoCandidato);
+          caballo_bt(fCand, cCand, fDe, cDe, caminoCandidato, mejorPasos,
+                     mejoresCaminos);
+          deshacerMovimiento(fCand, cCand, caminoCandidato);
         }
+      }
     }
+  }
+}
+
+void caballo(int fAc, int cAc, int fDe, int cDe) {
+  int **candidata = new int *[N]();
+  ListImp<int **> *mejoresSoluciones = new ListImp<int **>();
+  for (int f = 0; f < N; f++) {
+    candidata[f] = new int[N]();
+    for (int c = 0; c < N; c++) {
+      candidata[f][c] = -1;
+    }
+  }
+
+  candidata[fAc][cAc] = 1;
+  int mejoresPasos = INT_MAX;
+  caballo_bt(fAc, cAc, fDe, cDe, candidata, mejoresPasos, mejoresSoluciones);
+  for (int i = 0; i < mejoresSoluciones->getSize(); i++) {
+    int **unaMejorSol = mejoresSoluciones->get(i);
+    cout << "una nueva solucion a todos tus problemas llego:" << endl;
+    imprimirSolucion(unaMejorSol);
+    cout << endl << endl;
+  }
+  cout << "en total se han encontrado " << mejoresSoluciones->getSize()
+       << " soluciones" << endl;
 }
 ```
+
+</div>
 
 ---
 
-# Ejemplo: Generación de subconjuntos
+# Ejemplo: Problema de la Mochila
 
-Generar todos los subconjuntos de un conjunto dado.
+**Objetivo**: Buscar el máximo valor posible sin exceder la capacidad.
+
+**Estrategia**:
+
+- Para cada objeto: decidir si incluirlo o no
+- Explorar ambas opciones recursivamente
+- Mantener el mejor valor encontrado
+
+--- 
+
+# Código de la Mochila 0-1
+ 
+<div class="overflow-y-auto max-h-80 text-xs">
 
 ```cpp
-bool esSolucion(int idx, int n) {
-    return idx == n;
+#include <cassert>
+#include <climits>
+#include <iostream>
+#include <limits>
+#include <string>
+using namespace std;
+
+int cantObjetos = 4;
+string nombres[4] = {"ruby", "lingote", "moneda", "diamante"};
+int valores[4] = {10, 7, 5, 20};
+int pesos[4] = {5, 6, 2, 3};
+
+bool puedoPodar() {
+  return false; // claro que no esto es una optimizacion hacia arriba
 }
 
-void hacerMovimiento(vector<int>& actual, int elem) {
-    actual.push_back(elem);
+bool esSolucion(int objIndex) {
+  return objIndex == cantObjetos; // termine de evaluar todos los objetos
 }
 
-void deshacerMovimiento(vector<int>& actual) {
-    actual.pop_back();
+bool esMejorSolucion(int actual, int mejor) { return actual > mejor; }
+
+void clonarSolucion(bool *origen, bool *destino) {
+  for (int i = 0; i < cantObjetos; i++) {
+    destino[i] = origen[i];
+  }
 }
 
-void subconjuntosBT(vector<int>& conjunto, int idx, vector<int>& actual) {
-    if (esSolucion(idx, conjunto.size())) {
-        imprimir(actual);
-        return;
+bool puedoUsarObjeto(int capacidad, int objIndex) {
+  return capacidad >= pesos[objIndex];
+}
+
+void aplicarMovimiento(int &capacidad, bool *&objetosUsados, int &valorMochila,
+                       int objIndex) {
+  capacidad -= pesos[objIndex];
+  objetosUsados[objIndex] = true;
+  valorMochila += valores[objIndex];
+}
+
+void deshacerMovimiento(int &capacidad, bool *&objetosUsados, int &valorMochila,
+                        int objIndex) {
+  capacidad += pesos[objIndex];
+  objetosUsados[objIndex] = false;
+  valorMochila -= valores[objIndex];
+}
+
+void mochila_bt(int capacidad, int objIndex, bool *objetosUsados,
+                int valorActualMochila, bool *&mejorObjetosUsados,
+                int &mejorValorMochila) {
+  if (!puedoPodar()) {
+    if (esSolucion(objIndex)) {
+      if (esMejorSolucion(valorActualMochila, mejorValorMochila)) {
+        mejorValorMochila = valorActualMochila;
+        clonarSolucion(objetosUsados, mejorObjetosUsados);
+      }
+    } else {
+      for (int uso = 0; uso <= 1; uso++) {
+        if (uso) {
+          if (puedoUsarObjeto(capacidad, objIndex)) {
+            aplicarMovimiento(capacidad, objetosUsados, valorActualMochila,
+                              objIndex);
+            mochila_bt(capacidad, objIndex + 1, objetosUsados,
+                       valorActualMochila, mejorObjetosUsados,
+                       mejorValorMochila);
+            deshacerMovimiento(capacidad, objetosUsados, valorActualMochila,
+                               objIndex);
+          }
+        } else {
+          mochila_bt(capacidad, objIndex + 1, objetosUsados, valorActualMochila,
+                     mejorObjetosUsados, mejorValorMochila);
+        }
+      }
     }
-    // No incluir el elemento
-    subconjuntosBT(conjunto, idx + 1, actual);
-    // Incluir el elemento
-    hacerMovimiento(actual, conjunto[idx]);
-    subconjuntosBT(conjunto, idx + 1, actual);
-    deshacerMovimiento(actual);
+  }
+}
+
+void mochila_01(int capacidad) {
+  bool *usados = new bool[cantObjetos]();
+  bool *mejorUsados = new bool[cantObjetos]();
+  int mejorValorMochila = -1;
+  mochila_bt(capacidad, 0, usados, 0, mejorUsados, mejorValorMochila);
+  cout << mejorValorMochila << endl;
 }
 ```
 
----
-
-# Ejemplo: Problema de la mochila (Backtracking)
-
-Buscar el máximo valor posible sin exceder la capacidad.
-
-```cpp
-bool hayQuePodar(int capacidadRestante) {
-    return capacidadRestante < 0;
-}
-
-bool esSolucion(int idx, int n) {
-    return idx == n;
-}
-
-void mochilaBT(int idx, int capacidadRestante, int valorActual, int& mejorValor) {
-    if (hayQuePodar(capacidadRestante)) return;
-    if (esSolucion(idx, n)) {
-        mejorValor = max(mejorValor, valorActual);
-        return;
-    }
-    // No tomar el elemento
-    mochilaBT(idx + 1, capacidadRestante, valorActual, mejorValor);
-    // Tomar el elemento (si es válido)
-    if (pesos[idx] <= capacidadRestante) {
-        mochilaBT(idx + 1, capacidadRestante - pesos[idx], valorActual + valores[idx], mejorValor);
-    }
-}
-```
+</div>
 
 ---
 
@@ -250,7 +507,8 @@ La **poda** es fundamental para mejorar la eficiencia:
 
 - Evita explorar ramas que no pueden llevar a una solución válida.
 
-- **Diferencia clave**: 
+- **Diferencia clave**:
+
   - **Validación de movimiento**: Verifica si una acción es permitida por las reglas.
   - **Poda real**: Descarta ramas que no pueden mejorar la solución actual.
 
@@ -260,39 +518,35 @@ La **poda** es fundamental para mejorar la eficiencia:
 
 # Eficiencia y Complejidad en Backtracking
 
-- En el peor caso, **complejidad exponencial**  
-  (ej: N-Reinas → O(N!); Subconjuntos → O(2^N)).
+**Complejidad típica**: Los problemas resueltos con backtracking suelen tener complejidad factorial o exponencial.
 
-- **Sin poda**: se exploran todas las configuraciones posibles.
+**Factores que afectan el rendimiento**:
 
-- **Con poda**: se reduce el árbol de búsqueda, pero sigue siendo exponencial.
+- 📏 Tamaño del espacio de búsqueda
+- ✂️ Calidad de las podas implementadas
+- 🔄 Orden en que se prueban las opciones
 
-- El costo depende de:
-  - Tamaño del espacio de búsqueda
-  - Calidad de las podas
-  - Orden en que se prueban las opciones
-
-<br>
-
-👉 Backtracking no "vence" la complejidad, pero permite resolver problemas de tamaño moderado de forma práctica.
+> **Clave**: Backtracking no "vence" la complejidad exponencial, pero permite resolver problemas de tamaño moderado de forma práctica.
 
 ---
 
 # Poda Avanzada y Heurísticas
 
 - **Estrategias clásicas de poda:**
+
   - Verificar restricciones antes de avanzar
   - Abortar ramas que no pueden mejorar la solución
 
 - **Heurísticas comunes:**
   - Sudoku → elegir primero la celda con menos opciones posibles
-  - N-Reinas → ubicar reinas en columnas centrales primero
+  - Caballo → priorizar movimientos que lleven a casillas con menos salidas
 
 ---
 
 # Cuándo NO usar Backtracking
 
 - **Cuando existe una solución más eficiente**:
+
   - Programación dinámica (si hay subestructura óptima)
   - Algoritmos greedy (si la propiedad greedy se cumple)
   - Algoritmos específicos del dominio
@@ -315,7 +569,7 @@ La **poda** es fundamental para mejorar la eficiencia:
 
 **Características clave:**
 
-- La poda es fundamental para la eficiencia  
+- La poda es fundamental para la eficiencia
 
 - Se usa para encontrar una, todas, o la mejor solución
 
@@ -328,17 +582,9 @@ La **poda** es fundamental para mejorar la eficiencia:
 - ¿Cuándo conviene usar backtracking vs. otras técnicas?
 
 ---
-layout: center
-class: text-center
----
 
-# FIN!
-
-<br>
-
-**Backtracking**: Una técnica poderosa para resolver problemas de búsqueda sistemática
-
-<br>
-
-*¿Preguntas?*
-
+<div class="flex flex-col items-center justify-center h-full">
+  <h1>FIN!</h1>
+  <p><b>Backtracking:</b> Una técnica poderosa para resolver problemas de búsqueda sistemática</p>
+  <p><i>¿Preguntas?</i></p>
+</div>
